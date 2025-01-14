@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+    <!-- Adicionando o CDN do SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Estilos para o corpo da página */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Estilo de cabeçalho */
+        header {
+            background-color: #d91c30; /* Vermelho principal do Bradesco */
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #d91c30; /* Cor vermelha */
+            margin-bottom: 10px;
+        }
+
+        /* Estilos de formulário e seções */
+        section {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="email"], input[type="password"], input[type="text"], input[type="number"] {
+            width: 100%;
+            max-width: 400px; /* Mantendo a largura máxima de 400px */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
+            border-color: #d91c30; /* Foco na cor vermelha */
+        }
+
+        button {
+            background-color: #d91c30; /* Vermelho principal */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #b11a28; /* Tom mais escuro de vermelho */
+        }
+
+        /* Estilos para as áreas de resultados e lista de usuários */
+        #userDetails, #userList {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilo para os títulos secundários */
+        section + section {
+            margin-top: 30px;
+        }
+    </style>
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000';  // Substitua com o URL da sua API
+
+        // Função para mostrar alertas utilizando o SweetAlert2
+        function showAlert(message, type) {
+            if (type === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: message,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            } else if (type === 'error') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: message,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+
+        async function createUser() {
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            const user = { email, senha };
+
+            const response = await fetch(`${apiUrl}/user/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(user)
+            });
+
+            if (response.ok) {
+                showAlert('Usuário criado com sucesso!', 'success');
+                clearForm();
+            } else {
+                const error = await response.json();
+                showAlert(`Erro: ${error.detail}`, 'error');
+            }
+        }
+
+        async function updateUser() {
+            const userId = document.getElementById('userId').value;
+            const email = document.getElementById('emailUpdate').value;
+            const senha = document.getElementById('senhaUpdate').value;
+            const status = document.getElementById('statusUpdate').value;
+
+            const user = { email, senha, status };
+
+            const response = await fetch(`${apiUrl}/user/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(user)
+            });
+
+            if (response.ok) {
+                showAlert('Usuário atualizado com sucesso!', 'success');
+                clearForm();
+            } else {
+                const error = await response.json();
+                showAlert(`Erro: ${error.detail}`, 'error');
+            }
+        }
+
+        async function deleteUser() {
+            const userId = document.getElementById('userIdDelete').value;
+
+            const response = await fetch(`${apiUrl}/user/${userId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                showAlert('Usuário deletado com sucesso!', 'success');
+            } else {
+                const error = await response.json();
+                showAlert(`Erro: ${error.detail}`, 'error');
+            }
+        }
+
+        async function getUserByEmail() {
+            const email = document.getElementById('emailSearch').value;
+
+            const response = await fetch(`${apiUrl}/user/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'email': email  // Passando o e-mail como cabeçalho
+                }
+            });
+
+            const user = await response.json();
+
+            if (response.ok) {
+                document.getElementById('userDetails').innerHTML = ` 
+                    <h3>Usuário Encontrado</h3>
+                    <p>ID: ${user.id}</p>
+                    <p>Email: ${user.email}</p>
+                    <p>Senha: ${user.senha}</p>
+                    <p>Status: ${user.status}</p>
+                    <p>Data de Criação: ${user.data_criacao}</p>
+                    <p>Data de Atualização: ${user.data_atualizacao}</p>
+                `;
+                showAlert('Usuário encontrado com sucesso!', 'success');
+            } else {
+                showAlert('Usuário não encontrado!', 'error');
+            }
+        }
+
+        async function getAllUsers() {
+            const response = await fetch(`${apiUrl}/users`);
+            const users = await response.json();
+
+            let userList = '<h3>Lista de Usuários</h3>';
+            users.forEach(user => {
+                userList += `
+                    <p>ID: ${user.id}, Email: ${user.email}, Status: ${user.status}</p>
+                `;
+            });
+
+            document.getElementById('userList').innerHTML = userList;
+        }
+
+        function clearForm() {
+            document.getElementById('email').value = '';
+            document.getElementById('senha').value = '';
+            document.getElementById('userId').value = '';
+            document.getElementById('emailUpdate').value = '';
+            document.getElementById('senhaUpdate').value = '';
+            document.getElementById('statusUpdate').value = '';
+            document.getElementById('userIdDelete').value = '';
+            document.getElementById('emailSearch').value = '';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gerenciamento de Usuários</h1>
+        </header>
+
+        <section>
+            <h2>Cadastrar Usuário</h2>
+            <form onsubmit="event.preventDefault(); createUser();">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required><br>
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" required><br>
+                <button type="submit">Criar Usuário</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Atualizar Usuário</h2>
+            <form onsubmit="event.preventDefault(); updateUser();">
+                <label for="userId">ID do Usuário:</label>
+                <input type="text" id="userId" required><br>
+                <label for="emailUpdate">Email:</label>
+                <input type="email" id="emailUpdate"><br>
+                <label for="senhaUpdate">Senha:</label>
+                <input type="password" id="senhaUpdate"><br>
+                <label for="statusUpdate">Status:</label>
+                <input type="text" id="statusUpdate"><br>
+                <button type="submit">Atualizar Usuário</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Deletar Usuário</h2>
+            <form onsubmit="event.preventDefault(); deleteUser();">
+                <label for="userIdDelete">ID do Usuário:</label>
+                <input type="text" id="userIdDelete" required><br>
+                <button type="submit">Deletar Usuário</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Buscar Usuário por E-mail</h2>
+            <form onsubmit="event.preventDefault(); getUserByEmail();">
+                <label for="emailSearch">Email:</label>
+                <input type="email" id="emailSearch" required><br>
+                <button type="submit">Buscar</button>
+            </form>
+            <div id="userDetails"></div>
+        </section>
+
+        <section>
+            <h2>Lista de Todos os Usuários</h2>
+            <button onclick="getAllUsers()">Carregar Usuários</button>
+            <div id="userList"></div>
+        </section>
+    </div>
+</body>
+</html>
