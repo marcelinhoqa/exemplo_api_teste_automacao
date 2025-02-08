@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header
+from fastapi.responses import FileResponse
+import os
+
 from models.user import User
 from models.user_dto import UserDto
 from services.user_db import UserDb
@@ -15,6 +18,11 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos os cabeçalhos
 )
 
+# Rota para servir o index.html
+@app.get("/")
+async def get_index():
+    return FileResponse(os.path.join(os.getcwd(), "index.html"))
+
 user_db = UserDb()
 
 @app.post("/user/")
@@ -23,7 +31,7 @@ def create_user(user: User):
         user_db.insert(user)
         return {"message": "Usuário criado com sucesso!"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))  # Aqui, você pode passar o erro diretamente no detail.
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/user/", response_model=User)
 async def get_user_by_email_header(email: str = Header(...)):
@@ -38,7 +46,7 @@ async def get_user_by_email_header(email: str = Header(...)):
             print("Usuário não encontrado.")  # Se não encontrar, imprime uma mensagem
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))  # Passa a mensagem de erro como o detail
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.put("/user/{user_id}")
 async def update_user(user_id: int, user: User):
