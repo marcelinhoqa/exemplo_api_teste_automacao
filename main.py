@@ -56,8 +56,12 @@ async def serve_home():
 @app.post("/user/")
 def create_user(user: User):
     try:
-        user_db.insert(user)
-        return {"message": "Usuário criado com sucesso!"}
+        user_id = user_db.insert(user)
+        obj = {
+            "message": "Usuário criado com sucesso !",
+            "id": user_id
+        }
+        return obj  # <-- Corrigido aqui
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
