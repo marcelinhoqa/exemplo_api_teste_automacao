@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Cadastros</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f3f3f3;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #d91c30;
+            color: white;
+        }
+        button {
+            background-color: #d91c30;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #b11a28;
+        }
+        .loading {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Cadastros</h1>
+        <button onclick="fetchUsers()">Atualizar Lista</button>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="userList">
+                <tr><td colspan="3" class="loading">Carregando...</td></tr>
+            </tbody>
+        </table>
+        <br>
+        <a href="/">Voltar ao Menu</a>
+    </div>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000';
+
+        async function fetchUsers() {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '<tr><td colspan="3" class="loading">Carregando...</td></tr>';
+
+            try {
+                const response = await fetch(`${apiUrl}/users`);
+                if (!response.ok) throw new Error("Erro ao buscar usuários");
+                const users = await response.json();
+
+                if (users.length === 0) {
+                    userList.innerHTML = '<tr><td colspan="3">Nenhum cadastro encontrado.</td></tr>';
+                    return;
+                }
+
+                userList.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.email}</td>
+                        <td>
+                            <button onclick="deleteUser(${user.id})">Deletar</button>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (error) {
+                userList.innerHTML = '<tr><td colspan="3">Erro ao carregar usuários.</td></tr>';
+                console.error(error);
+            }
+        }
+
+        async function deleteUser(userId) {
+            const confirmDelete = await Swal.fire({
+                title: "Tem certeza?",
+                text: "Esta ação não pode ser desfeita!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d91c30",
+                cancelButtonColor: "#555",
+                confirmButtonText: "Sim, deletar"
+            });
+
+            if (!confirmDelete.isConfirmed) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/user/${userId}`, { method: 'DELETE' });
+
+                if (response.ok) {
+                    Swal.fire("Deletado!", "O usuário foi removido.", "success");
+                    fetchUsers();
+                } else {
+                    Swal.fire("Erro!", "Não foi possível deletar.", "error");
+                }
+            } catch (error) {
+                Swal.fire("Erro!", "Falha ao conectar ao servidor.", "error");
+                console.error(error);
+            }
+        }
+
+        // Carregar a lista ao abrir a página
+        fetchUsers();
+    </script>
+</body>
+</html>

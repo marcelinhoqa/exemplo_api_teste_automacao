@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.responses import FileResponse
 import os
-
 from models.user import User
 from models.user_dto import UserDto
 from services.user_db import UserDb
@@ -18,12 +17,35 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos os cabeçalhos
 )
 
-# Rota para servir o index.html
+user_db = UserDb()
+
 @app.get("/")
-async def get_index():
+async def serve_index():
     return FileResponse(os.path.join(os.getcwd(), "index.html"))
 
-user_db = UserDb()
+@app.get("/home")
+async def serve_home():
+    return FileResponse(os.path.join(os.getcwd(), "home.html")) 
+
+@app.get("/cadastro")
+async def serve_home():
+    return FileResponse(os.path.join(os.getcwd(), "cadastro.html"))
+
+@app.get("/atualizar")
+async def serve_home():
+    return FileResponse(os.path.join(os.getcwd(), "atualizar.html"))
+
+@app.get("/listar")
+async def serve_home():
+    return FileResponse(os.path.join(os.getcwd(), "listar.html"))
+
+@app.get("/consultar_por_email")
+async def serve_home():
+    return FileResponse(os.path.join(os.getcwd(), "consultar_por_email.html"))
+
+@app.get("/deletar")
+async def serve_home():
+    return FileResponse(os.path.join(os.getcwd(), "deletar.html"))
 
 @app.post("/user/")
 def create_user(user: User):
@@ -36,14 +58,14 @@ def create_user(user: User):
 @app.get("/user/", response_model=User)
 async def get_user_by_email_header(email: str = Header(...)):
     try:
-        print(f"Recebendo e-mail do cabeçalho: {email}")  # Imprime o e-mail recebido no cabeçalho
+        print(f"Recebendo e-mail do cabeçalho: {email}")
         user = user_db.find_by_email(email)
         
         if user:
-            print(f"Usuário encontrado: {user}")  # Se encontrar, imprime os dados do usuário
+            print(f"Usuário encontrado: {user}")
             return user
         else:
-            print("Usuário não encontrado.")  # Se não encontrar, imprime uma mensagem
+            print("Usuário não encontrado.")
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

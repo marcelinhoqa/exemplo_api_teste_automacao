@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizar Cadastro</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Estilos Gerais */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* Inputs e Botão */
+        input, select {
+            width: 90%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 95%;
+            padding: 10px;
+            background-color: #d91c30;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #b11a28;
+        }
+
+        /* Link para voltar */
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #d91c30;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Atualizar Cadastro</h1>
+        <form onsubmit="event.preventDefault(); updateUser();">
+            <input type="text" id="userId" placeholder="ID do Usuário" required>
+            <input type="email" id="emailUpdate" placeholder="Novo Email">
+            <input type="password" id="senhaUpdate" placeholder="Nova Senha">
+            <select id="statusUpdate">
+                <option value="">Selecione o Status</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+            </select>
+            <button type="submit">Atualizar</button>
+        </form>
+        <a href="/" class="back-link">Voltar ao Menu</a>
+    </div>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000';
+
+        async function updateUser() {
+            const userId = document.getElementById('userId').value;
+            const email = document.getElementById('emailUpdate').value;
+            const senha = document.getElementById('senhaUpdate').value;
+            const status = document.getElementById('statusUpdate').value;
+
+            const user = {};
+            if (email) user.email = email;
+            if (senha) user.senha = senha;
+            if (status) user.status = status;
+
+            if (Object.keys(user).length === 0) {
+                Swal.fire("Atenção!", "Nenhum campo foi preenchido!", "warning");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/user/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(user)
+                });
+
+                if (response.ok) {
+                    Swal.fire("Sucesso!", "Usuário atualizado com sucesso!", "success");
+                    document.getElementById('userId').value = "";
+                    document.getElementById('emailUpdate').value = "";
+                    document.getElementById('senhaUpdate').value = "";
+                    document.getElementById('statusUpdate').value = "";
+                } else {
+                    const error = await response.json();
+                    Swal.fire("Erro!", error.detail, "error");
+                }
+            } catch (error) {
+                Swal.fire("Erro!", "Erro ao conectar com o servidor!", "error");
+            }
+        }
+    </script>
+</body>
+</html>

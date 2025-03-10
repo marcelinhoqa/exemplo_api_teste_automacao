@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deletar Cadastro</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Estilos Gerais */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* Input e Botão */
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 95%;
+            padding: 10px;
+            background-color: #d91c30;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #b11a28;
+        }
+
+        /* Link para voltar */
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #d91c30;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Deletar Cadastro</h1>
+        <form onsubmit="event.preventDefault(); deleteUser();">
+            <input type="text" id="userIdDelete" placeholder="ID do Usuário" required>
+            <button type="submit">Deletar</button>
+        </form>
+        <a href="/" class="back-link">Voltar ao Menu</a>
+    </div>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000';
+
+        async function deleteUser() {
+            const userId = document.getElementById('userIdDelete').value;
+
+            if (!userId) {
+                Swal.fire("Atenção!", "Por favor, informe o ID do usuário!", "warning");
+                return;
+            }
+
+            const confirmacao = await Swal.fire({
+                title: "Tem certeza?",
+                text: "Essa ação não pode ser desfeita!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d91c30",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Sim, deletar!",
+                cancelButtonText: "Cancelar"
+            });
+
+            if (!confirmacao.isConfirmed) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/user/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    Swal.fire("Sucesso!", "Usuário deletado com sucesso!", "success");
+                    document.getElementById('userIdDelete').value = "";
+                } else {
+                    const error = await response.json();
+                    Swal.fire("Erro!", error.detail || "Usuário não encontrado!", "error");
+                }
+            } catch (error) {
+                Swal.fire("Erro!", "Erro ao conectar com o servidor!", "error");
+            }
+        }
+    </script>
+</body>
+</html>

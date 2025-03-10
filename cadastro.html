@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Estilos Gerais */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* Inputs e Botão */
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 95%;
+            padding: 10px;
+            background-color: #d91c30;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #b11a28;
+        }
+
+        /* Link para voltar */
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #d91c30;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Criar Cadastro</h1>
+        <form onsubmit="event.preventDefault(); createUser();">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Criar Usuário</button>
+        </form>
+        <a href="/" class="back-link">Voltar ao Menu</a>
+    </div>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000';
+
+        async function createUser() {
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            const user = { email, senha };
+
+            try {
+                const response = await fetch(`${apiUrl}/user/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(user)
+                });
+
+                if (response.ok) {
+                    Swal.fire("Sucesso!", "Usuário criado com sucesso!", "success");
+                    document.getElementById('email').value = "";
+                    document.getElementById('senha').value = "";
+                } else {
+                    const error = await response.json();
+                    Swal.fire("Erro!", error.detail, "error");
+                }
+            } catch (error) {
+                Swal.fire("Erro!", "Erro ao conectar com o servidor!", "error");
+            }
+        }
+    </script>
+</body>
+</html>
