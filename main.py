@@ -5,6 +5,7 @@ from models.user import User
 from models.user_dto import UserDto
 from services.user_db import UserDb
 from fastapi.middleware.cors import CORSMiddleware
+from db import Db
 
 app = FastAPI()
 
@@ -17,7 +18,12 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos os cabeçalhos
 )
 
+
+db = Db()
+db.create_tables() 
+
 user_db = UserDb()
+
 
 @app.get("/")
 async def serve_index():
